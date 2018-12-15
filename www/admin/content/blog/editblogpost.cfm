@@ -37,14 +37,34 @@
 	<cfif !errorBean.hasErrors()>
 		<cfif val(form.id)>
 			<!--- Edit Entity  --->
+            <cfset blogPost = EntityLoad('BlogPost', form.id, true) />
+            <cfset blogPost.title = form.title />
+            <cfset blogPost.summary = form.summary />
+            <cfset blogPost.body = form.body />
+            <cfset blogPost.datePosted = form.datePosted />
+            <cfset blogPost.modifiedDateTime = now() />
+            <cfloop array=#blogPost.getCategories()# index=category>
+                <cfset EntityDelete(category) />
+            </cfloop>
 		<cfelse>
 			<!--- Create Entity --->
+            <cfset blogPost = EntityNew('BlogPost') />
+            <cfset blogPost.title = form.title />
+            <cfset blogPost.summary = form.summary />
+            <cfset blogPost.body = form.body />
+            <cfset blogPost.datePosted = form.datePosted />
+            <cfset blogPost.createdDateTime = now() />            
 		</cfif>
 		
 		<cfset entitySave(blogPost) />
 		
 		<cfloop list="#form.categories#" index="categoryID">
 			<!--- Add Category to Entity --->
+            <cfset blogPostCategory = EntityNew('blogPostCategory') />
+            <cfset blogCategory = EntityLoad('blogCategory', categoryID, true) />
+            <cfset blogPostCategory.blogCategory = blogCategory />
+            <cfset blogPostCategory.blogPost = blogPost />
+            <cfset EntitySave(blogPostCategory) />
 		</cfloop>
 		
 		<cfset ormFlush() />
@@ -55,7 +75,13 @@
 
 <cfif val(url.id)>
 	<!--- Get Entity Data --->
-
+    <cfset blogPost = EntityLoad('BlogPost', url.id, true) />
+    <cfset form.id = blogPost.id />
+    <cfset form.title = blogPost.title />
+    <cfset form.summary = blogPost.summary />
+    <cfset form.body = blogPost.body />
+    <cfset form.datePosted = blogPost.datePosted />
+    <cfset form.categories = blogPost.categoryids />
 </cfif>
 
 <cfset categories = entityLoad('BlogCategory' ) />

@@ -1,74 +1,13 @@
 <cfparam name="form.submitted" default="0" />
 <cfparam name="form.contactname" default="" />
 <cfparam name="form.email" default="">
+<cfparam name="form.message" default="">
 <cfscript>
-    contactInfo = {address='12345 Main Street, Los Angeles, CA 92001', phonenumber='(213) 555-5555', email='viet@example.com', skype=''};
+    contactInfo = {address='12345 Main Street, Los Angeles, CA 90001', phonenumber='(213) 555-5555', email='viet@example.com', skype=''};
 </cfscript>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<meta name="description" content="Clean Slide Responsive Vcard Template" />
-	<meta name="keywords" content="jquery, Responsive Vcard, Template, Vcard, Clean Slide" />
-	<meta http-equiv="X-UA-Compatible" content="IE=9" />
-	<meta http-equiv="X-UA-Compatible" content="IE=7" />
-	<title>This is my WebSite</title>
-	
-	<!-- Loading Google Web fonts -->
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css' />
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css' />
-	<link href='http://fonts.googleapis.com/css?family=IM+Fell+DW+Pica' rel='stylesheet' type='text/css' />
-	<link href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css' />
-	
-	<!-- CSS Files -->
-	<link href="assets/css/reset.css" rel="stylesheet" type="text/css" />
-	<link href="assets/css/style.css" rel="stylesheet" type="text/css"  id="color" />
-	<link href="assets/css/typography.css" rel="stylesheet" type="text/css"  id="customFont"/>
-	<link href="assets/css/arial_content.css" rel="stylesheet" type="text/css"  id="contentfont"/>
-	
-	<!-- include jQuery library -->
-	<script type="text/javascript" src="assets/js/jquery-1.7.min.js"></script>
-
-	<script src="assets/js/raphael.js" type="text/javascript"></script>
-	<script src="assets/js/init.js" type="text/javascript"></script>
-</head>
-	
-<body>
-
-	<!-- wrapper -->
-	<div class="clr" id="top-head">&nbsp;</div>
-	<div id="container">
-		<!--header -->
-		<div id="header" >
-			<div class="logo-bg" >
-				<!--logo -->
-				<div class="logo">
-					<img src="assets/images/logo.png" alt="Logo" width="202" height="52" border="0"  id="logo" />
-				</div>
-				
-				<!--head right -->
-				<div class="right">
-				
-					<!--// Navigation //-->
-					<div class="menu_nav">
-						<div id="nav-wrap">
-							<ul class="arrowunderline" id="nav">
-								<li class="home"><a href="index.cfm">Home</a></li>
-								<li class="about"><a href="about.cfm">About</a></li>
-								<li class="resume"><a href="resume.cfm">Resume</a></li>
-								<li class="blog"><a href="blog.cfm">Blog</a></li>
-								<li class="portfolio"><a href="portfolio.cfm">Portfolio</a></li>
-								<li class="contact" id="selected"><a href="contact.cfm">Contact</a></li>	
-							</ul>
-						</div>
-					</div>
-					<!--// Navigation End //-->
-				</div>
-				<!--// -head right end //-->
-			</div>
-			<!--// logo bg end //-->
-		</div>
-		<!--header end -->
+<cfhttp url="https://api.twitter.com/1/statuses/user_timeline.xml?count=5&screen_name=simonfree" method="get" result="twitterFeed" />
+<cfimport taglib="customTags/" prefix="layout" />
+<layout:page section="contact">
 		
 		<!-- Content Start -->
   	
@@ -105,45 +44,55 @@
                                     <cfif form.submitted>
                                         <cfset ok=true />
 
-                                        <cfif len(form.contactname) eq 0>
+                                        <cfif NOT len(trim(form.contactname))>
                                             <cfset ok = false />
                                         </cfif>
 
-                                        <cfif len(form.email) eq 0>
+                                        <cfif NOT len(trim(form.email))>
                                             <cfset ok = false />
                                         </cfif>
 
-                                        <cfif len(form.message) eq 0>
+                                        <cfif not len(trim(form.message))> <!---CF keyword is not case-sensitive not or NOT is same --->
                                             <cfset ok = false />
                                         </cfif>
 
-                                        <cfif ok eq false>
+                                        <cfif !ok>
                                             <p>You did not provide all the required information!</p>
+                                        <cfelse>
+                                            <p>Form summitted successfully!</p>
+                                            <cfmail from="#form.email#" to="me@example.com" subject="Contact Request" type="HTML">
+                                                <h2>Contact Request</h2>
+                                                <p>
+                                                    From: #form.contactName# (#form.email#)
+                                               </p>
+                                               <p>#form.message#</p>
+                                            </cfmail>
                                         </cfif>
                                     </cfif>								
 									<div id="post_message" class="post_message"></div>
 									
 									<div class="boxBody">			  
 										<div class="desc">
-
+                                            <cfoutput>
 											<form id="form" action="contact.cfm" method="post">
 												<div>
 													<label>Name <span class="font-11">(required)</span></label>
-													<input name="contactname" type="text" class="required" />
+													<input name="contactname" type="text" class="required" value="#form.contactname#" />
 												</div>
 												<div>
 													<label>E-mail <span class="font-11">(required)</span></label>				
-													<input name="email" type="text" class="required email" />		
+													<input name="email" type="text" class="required email" value="#form.email#" />		
 												</div>
 												<div class="textarea">
 													<label>Message <span class="font-11">(required)</span></label>				
-													<textarea name="message" rows="6" cols="60" class="required"></textarea>		
+													<textarea name="message" rows="6" cols="60" class="required">#form.message#</textarea>		
 												</div>
 												<div>
 													<input id="submitBtn" value="Submit"  name="submit" type="submit" class="submitBtn" />
 												</div>
                                                 <input type="hidden" name="submitted" value="1" />
-											</form>	
+											</form>
+                                            </cfoutput>	
 										</div><!--END desc show--> 
 									<!--END desc-->	
 									</div>					
@@ -162,7 +111,7 @@
 								<div class="clr"><div class="input-box1">Address</div><span>#contactInfo.address#</span></div>
 								<div class="clr"> &nbsp;</div>
 								<div class="clr"><div class="input-box1">Phone</div><span>#contactInfo.phonenumber#</span></div>
-								<div class="clr"><div class="input-box1">E-mail</div><span><a href="##">#contactInfo.email#</a></span>  </div>
+								<div class="clr"><div class="input-box1">E-mail</div><span><a href="##">#application.utilities.convertStringToASCII(contactInfo.email)#</a></span>  </div>
 								<div class="clr"><div class="input-box1">Skype </div> <span><a href="##">#contactInfo.skype#</a></span> </div> 
                                 </cfoutput>
 							</div>
@@ -172,8 +121,13 @@
 								<div class="twitter clr"> 
 									<!-- Twitter Output -->
 									<ul>
-										<li>
-										</li>
+                                        <cfoutput>
+                                            <cfloop array="#XmlParse(twitterFeed.fileContent).errors.error#" index="feedItem">
+                                                <li>
+                                                    #feedItem#
+                                                </li>
+                                            </cfloop>
+                                        </cfoutput>
 									</ul>
 								</div>
 							</div>
@@ -181,12 +135,4 @@
 					</div><!--//clr end //-->
 					<div class="clr"></div>
 				</div><!-- contact end -->
-		
-				<div class="clr"></div>
-			</div><!--card pattern end -->
-			<div class="clr "></div>
-		</div>		  <!--content end -->	
-		<div class="bottom-shade"></div>
-	</div>  <!--Container / wrapper end -->	
-</body>
-</html>
+<cfinclude template="includes/footer.cfm" />
